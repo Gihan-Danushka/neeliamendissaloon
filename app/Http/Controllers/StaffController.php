@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Staff;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class StaffController extends Controller
 {
@@ -70,7 +71,8 @@ class StaffController extends Controller
 
     public function store(Request $request)
     {
-        try {
+        
+            //dd($request);
             // Validate the request data
             $request->validate([
                 'name' => 'required|string|max:255',
@@ -85,7 +87,7 @@ class StaffController extends Controller
                 'basic_salary' => 'nullable|numeric|min:0',
                 'etf_number' => 'nullable|string|max:255',
             ]);
-
+        try {
             // Create a new staff member
             $staff = Staff::create([
                 'name' => $request->input('name'),
@@ -114,6 +116,10 @@ class StaffController extends Controller
             // Redirect to the staff index page after successful creation
             return redirect()->route('staff.index')->with('success', 'Staff member created successfully.');
         } catch (\Exception $e) {
+            Log::error('Failed to create staff member: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
+        
             // Handle any errors that occur during the process
             if ($request->wantsJson()) {
                 return response()->json([
