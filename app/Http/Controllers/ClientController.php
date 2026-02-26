@@ -53,7 +53,7 @@ class ClientController extends Controller
             'name'     => 'required',
             'email'    => 'nullable|email|unique:clients,email',
             'contact'  => 'required',
-            'address'  => 'required',
+            'address'  => 'nullable',
             'whatsapp' => 'required',
             'allergies'=> 'nullable',
         ]);
@@ -85,7 +85,7 @@ class ClientController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'nullable|email',
             'contact'  => 'required',
-            'address'  => 'required|string|max:500',
+            'address'  => 'nullable|string|max:500',
             'whatsapp' => 'required',
             'allergies'=> 'nullable',
         ]);

@@ -188,12 +188,9 @@
                             @enderror
                             </div>
                         <div>
-                            <label for="address" class="block text-sm font-medium text-gray-700">Address <span class="text-red-500">*</span></label>
+                            <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
                             <textarea id="address" name="address" rows="3" placeholder="Enter client's address"
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent p-1"
-                            
-                            value="{{ old('address') }}">
-                            </textarea>
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent p-1">{{ old('address') }}</textarea>
                             
                                 @error('address')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>

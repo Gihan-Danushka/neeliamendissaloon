@@ -172,10 +172,34 @@
             right: 0.5rem !important;
         }
         
-        .select2-container--default.select2-container--focus .select2-selection--single {
+        .select2-container--default .select2-selection--multiple {
+            min-height: 3rem !important;
+            border: 2px solid #e5e7eb !important;
+            border-radius: 0.75rem !important;
+            padding: 4px 8px !important;
+        }
+        
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
             border-color: #1e3a8a !important;
-            ring: 2px !important;
-            ring-color: rgba(209, 120, 90, 0.2) !important;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #1e3a8a !important;
+            border-color: #1e3a8a !important;
+            color: white !important;
+            border-radius: 0.5rem !important;
+            padding: 2px 8px !important;
+            margin-top: 4px !important;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: white !important;
+            margin-right: 5px !important;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+            color: #fbbf24 !important;
+            background-color: transparent !important;
         }
 
         .select2-dropdown {
@@ -531,6 +555,21 @@
                                        transition-all duration-200 group-hover:border-gray-300" required>
                         </div>
 
+                        {{-- Address --}}
+                        <div class="group md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-[#D1785A]" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Home Address
+                            </label>
+                            <textarea name="address" rows="2" placeholder="Enter client's address..."
+                                class="w-full text-base px-4 py-3 rounded-xl border-2 border-gray-200 shadow-sm 
+                                       focus:border-customPalette-dark focus:ring-2 focus:ring-customPalette-dark/20 
+                                       transition-all duration-200 group-hover:border-gray-300 resize-none"></textarea>
+                        </div>
+
                         {{-- Select Service --}}
                         <div class="group md:col-span-2">
                             <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
@@ -538,20 +577,18 @@
                                     <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
                                     <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
                                 </svg>
-                                Select Service <span class="text-red-500 ml-1">*</span>
+                                Select Services <span class="text-red-500 ml-1">*</span>
                             </label>
-                            <select name="service_id" id="serviceSelect"
+                            <select name="service_id[]" id="serviceSelect" multiple
                                 class="w-full h-12 text-base px-4 rounded-xl border-2 border-gray-200 shadow-sm 
                                        focus:border-customPalette-dark focus:ring-2 focus:ring-customPalette-dark/20 
                                        transition-all duration-200 group-hover:border-gray-300 bg-white" required>
-                                <option value="" disabled selected>Choose a service...</option>
                                 @foreach($services as $service)
-                                    {{-- add a padded numeric code for easier searching (e.g. 01, 02, …) --}}
                                     @php
                                         $code = str_pad($loop->iteration, 2, '0', STR_PAD_LEFT);
                                     @endphp
                                     <option value="{{ $service->id }}" data-code="{{ $code }}">
-                                        {{ $code }} - {{ $service->name }}
+                                        {{ $code }} - {{ $service->name }} (Rs. {{ number_format($service->price, 2) }})
                                     </option>
                                 @endforeach
                             </select>
@@ -749,10 +786,11 @@
 
             // Initialize Select2 for service dropdown
             $('#serviceSelect').select2({
-                placeholder: "Search for a service...",
+                placeholder: "Search for services...",
                 allowClear: true,
                 dropdownParent: $('#bookingModal'),
                 width: '100%',
+                closeOnSelect: false,
                 matcher: function(params, data) {
                     // default behaviour first (matches against text)
                     if ($.trim(params.term) === '') {

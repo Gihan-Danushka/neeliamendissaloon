@@ -84,6 +84,7 @@ class StaffController extends Controller
                 'bank_name' => 'nullable|string|max:255',
                 'basic_salary' => 'nullable|numeric|min:0',
                 'etf_number' => 'nullable|string|max:255',
+                'attendance_allowance' => 'nullable|numeric|min:0',
             ]);
 
             // Create a new staff member
@@ -97,6 +98,7 @@ class StaffController extends Controller
                 'bank_name' => $request->input('bank_name'),
                 'basic_salary' => $request->input('basic_salary'),
                 'etf_number' => $request->input('etf_number'),
+                'attendance_allowance' => $request->input('attendance_allowance'),
             ]);
 
             // Attach the category IDs to the staff member
@@ -195,6 +197,7 @@ class StaffController extends Controller
                 'bank_name' => 'nullable|string|max:255',
                 'basic_salary' => 'nullable|numeric|min:0',
                 'etf_number' => 'nullable|string|max:255',
+                'attendance_allowance' => 'nullable|numeric|min:0',
             ]);
 
             // Find the staff member by ID
@@ -223,6 +226,7 @@ class StaffController extends Controller
                 'bank_name' => $request->input('bank_name'),
                 'basic_salary' => $request->input('basic_salary'),
                 'etf_number' => $request->input('etf_number'),
+                'attendance_allowance' => $request->input('attendance_allowance'),
             ]);
 
             // Sync the associated categories (this will update the pivot table)

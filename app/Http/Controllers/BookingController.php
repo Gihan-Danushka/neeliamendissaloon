@@ -167,16 +167,17 @@ public function webCreate()
 public function webStore(Request $request)
 {
     $request->validate([
-        'full_name'   => 'required|string|max:255',
-        'email'       => 'nullable|email|max:255',
-        'phone'       => 'required|string|max:20',
-        'address'     => 'nullable|string|max:255',
-        'whatsapp'    => 'nullable|string|max:20',
-        'allergies'   => 'nullable|string|max:255',
-        'service_id'  => 'required|exists:services,id',
-        'date'        => 'required|date',
-        'start_time'  => 'required',
-        'message'     => 'nullable|string'
+        'full_name'    => 'required|string|max:255',
+        'email'        => 'nullable|email|max:255',
+        'phone'        => 'required|string|max:20',
+        'address'      => 'nullable|string|max:255',
+        'whatsapp'     => 'nullable|string|max:20',
+        'allergies'    => 'nullable|string|max:255',
+        'service_id'   => 'required|array',
+        'service_id.*' => 'exists:services,id',
+        'date'         => 'required|date',
+        'start_time'   => 'required',
+        'message'      => 'nullable|string'
     ]);
 
     // Find or create client (best: by contact)
@@ -212,7 +213,9 @@ public function webStore(Request $request)
 
     }
 
-    $service = Service::findOrFail($request->service_id);
+    // Calculate total price from multiple services
+    $services = Service::whereIn('id', $request->service_id)->get();
+    $totalPrice = $services->sum('price');
 
     //Create booking with BOTH user_id + client_id
     $booking = Booking::create([
@@ -222,12 +225,12 @@ public function webStore(Request $request)
         'start_time'  => $request->start_time,
         'end_time'    => $request->start_time, // if you calculate duration later, update this
         'status'      => 'approved',
-        'total_price' => $service->price,
+        'total_price' => $totalPrice,
         'staff_id'    => null,
     ]);
 
-    //Attach service (better way)
-    $booking->services()->attach($service->id);
+    //Attach services
+    $booking->services()->attach($request->service_id);
 
     return redirect()->back()->with('success', ' Successfully created your booking!');
 }

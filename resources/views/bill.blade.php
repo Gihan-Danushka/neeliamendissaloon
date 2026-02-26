@@ -62,9 +62,9 @@
     @if(file_exists($logoPath))
       <img src="{{ $logoPath }}" class="logo" alt="Logo">
     @endif --}}
-    <div class="title">Glory Luxe Beauty Studio</div>
-    <div class="semi">144 Diulapitiya Road, Marandagahamula</div>
-    <div class="semi">070 422 3885</div>
+    <div class="title">Neeliya Mendis Salon</div>
+    <div class="semi">No.368/ 5B Work Camp Road, Negombo</div>
+    <div class="semi">077 306 3783</div>
   </div>
 
   <div class="line"></div>

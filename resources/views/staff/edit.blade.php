@@ -97,6 +97,11 @@
                 </div>
 
                 <div class="form-group mb-4">
+                    <label for="attendance_allowance" class="block text-sm font-medium text-gray-700">Attendance Allowance</label>
+                    <input type="number" step="0.01" id="attendance_allowance" name="attendance_allowance" value="{{ old('attendance_allowance', $staff->attendance_allowance) }}" class="form-control px-4 py-2 border border-gray-300 rounded-md w-full">
+                </div>
+
+                <div class="form-group mb-4">
                     <label for="etf_number" class="block text-sm font-medium text-gray-700">ETF Number</label>
                     <input type="text" id="etf_number" name="etf_number" value="{{ old('etf_number', $staff->etf_number) }}" class="form-control px-4 py-2 border border-gray-300 rounded-md w-full">
                 </div>

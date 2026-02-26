@@ -19,7 +19,8 @@ class Staff extends Model
         'bank_account_number',
         'bank_name',
         'basic_salary',
-        'etf_number'
+        'etf_number',
+        'attendance_allowance'
     ];
 
 

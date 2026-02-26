@@ -33,6 +33,7 @@ class StaffTest extends TestCase
             'bank_name' => 'Test Bank',
             'basic_salary' => 50000,
             'etf_number' => 'ETF123',
+            'attendance_allowance' => 5000,
         ]);
 
         $response->assertRedirect(route('staff.index'));
@@ -41,6 +42,7 @@ class StaffTest extends TestCase
             'experience' => '5 Years',
             'bank_name' => 'Test Bank',
             'basic_salary' => 50000,
+            'attendance_allowance' => 5000,
         ]);
     }
 
@@ -69,6 +71,7 @@ class StaffTest extends TestCase
             'bank_name' => 'New Bank',
             'basic_salary' => 60000,
             'etf_number' => 'ETF456',
+            'attendance_allowance' => 7000,
         ]);
 
         $response->assertRedirect(route('staff.index'));
@@ -77,6 +80,7 @@ class StaffTest extends TestCase
             'name' => 'Updated Name',
             'experience' => 'New Experience',
             'basic_salary' => 60000,
+            'attendance_allowance' => 7000,
         ]);
     }
 }
