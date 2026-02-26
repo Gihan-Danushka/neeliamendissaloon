@@ -127,20 +127,17 @@
             <input type="hidden" name="staff_id" id="staff_id_hidden">
             <div id="servicesHiddenInputs"></div>
             <input type="hidden" name="cashGiven" id="cashGivenHidden">
+            <input type="hidden" name="print_receipt" id="printReceiptHidden" value="0">
 
             <div class="flex gap-3">
                 
-                <input type="hidden" name="print_receipt" id="printReceiptHidden" value="0">
-
-                {{-- ✅ New Download button using the SAME function, no edits to functions --}}
-                <button type="button"
-                class="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700"
-                onclick="downloadInvoice()">
-                Download PDF
+                {{-- Download & Print button --}}
+                <button type="button" id="downloadPrintBtn"
+                    class="px-8 py-3 bg-emerald-600 text-white font-bold rounded-lg shadow-lg hover:bg-emerald-700 transition-all flex items-center gap-2 transform hover:scale-105"
+                    onclick="downloadAndPrintInvoice()">
+                    <i data-feather="printer"></i>
+                    Download & Print
                 </button>
-
-
-
             </div>
         </form>
 
@@ -218,34 +215,6 @@
             let balance = cashGiven - total;
             $('#balanceAmount').text(balance.toFixed(2));
         }
-        
-        function submitPreview() { // unchanged
-            let clientId = $('#client').val();
-            if (!clientId) {
-                alert('Please select a client first.');
-                return;
-            }
-            $('#client_id_hidden').val(clientId);
-
-            $('#servicesHiddenInputs').empty();
-            $('#serviceList tr').each(function() {
-                let serviceName = $(this).find('td:first').text().trim();
-                let service = $('#service option').filter(function() {
-                    return $(this).text().trim() === serviceName;
-                });
-                let serviceId = service.val();
-                if (serviceId) {
-                    $('#servicesHiddenInputs').append(
-                        `<input type="hidden" name="services[]" value="${serviceId}">`
-                    );
-                }
-            });
-
-            $('#cashGivenHidden').val($('#cashGiven').val());
-
-            // Submit to preview (or temporarily switched to download by the Download button)
-            $('#previewForm').submit();
-        }
     </script>
     <script>
     function buildHiddenInputs() {
@@ -258,34 +227,36 @@
 
         $('#servicesHiddenInputs').empty();
         $('#serviceList tr').each(function() {
-        // If you keep matching by text:
-        const serviceName = $(this).find('td:first').text().trim();
-        const $opt = $('#service option').filter(function () {
-            return $(this).text().trim() === serviceName;
-        });
-        const serviceId = $opt.val();
-        if (serviceId) {
-            $('#servicesHiddenInputs').append(
-            `<input type="hidden" name="services[]" value="${serviceId}">`
-            );
-        }
+            const serviceName = $(this).find('td:first').text().trim();
+            const $opt = $('#service option').filter(function () {
+                return $(this).text().trim() === serviceName;
+            });
+            const serviceId = $opt.val();
+            if (serviceId) {
+                $('#servicesHiddenInputs').append(
+                    `<input type="hidden" name="services[]" value="${serviceId}">`
+                );
+            }
         });
 
         $('#cashGivenHidden').val($('#cashGiven').val());
         return true;
     }
 
-    async function downloadInvoice() {
+    function downloadAndPrintInvoice() {
+        const printFlag = document.getElementById('printReceiptHidden');
+        if (printFlag) printFlag.value = '1';
+        executeAction();
+    }
+
+    async function executeAction() {
         const f = document.getElementById('previewForm');
         if (!f) return;
 
         if (!buildHiddenInputs()) return;
 
         const printFlag = document.getElementById('printReceiptHidden');
-        if (printFlag) printFlag.value = '1';
-
-        const btn = document.querySelector('button[onclick="downloadInvoice()"]');
-        if (btn) btn.disabled = true;
+        const isPrint = printFlag && printFlag.value === '1';
 
         // try AJAX-based download first
         try {
@@ -323,66 +294,66 @@
             link.remove();
             URL.revokeObjectURL(blobUrl);
 
-            // success, reset flag and button
-            if (btn) btn.disabled = false;
-            if (printFlag) printFlag.value = '0';
             return;
         } catch (ajaxError) {
             console.warn('AJAX download failed, falling back', ajaxError);
-            // proceed to form submit fallback
         }
 
-        // fallback: submit form to new tab/window so user can see errors
+        // fallback: submit form to new tab
         const oldAction = f.action;
-        const oldMethod = f.method;
         const oldTarget = f.getAttribute('target');
 
         f.action = "{{ route('invoice.download') }}";
-        f.method = "POST";
         f.target = "_blank";
-        if (!f.querySelector('input[name=_token]')) {
-            const t = document.createElement('input');
-            t.type = 'hidden'; t.name = '_token'; t.value = "{{ csrf_token() }}";
-            f.appendChild(t);
-        }
         f.submit();
 
         setTimeout(function () {
-            if (printFlag) printFlag.value = '0';
             f.action = oldAction;
-            f.method = oldMethod;
             if (oldTarget) {
                 f.setAttribute('target', oldTarget);
             } else {
                 f.removeAttribute('target');
             }
-            if (btn) btn.disabled = false;
         }, 300);
     }
 
-    // keep your original preview submit using the same builder
     function submitPreview() {
         if (!buildHiddenInputs()) return;
-        $('#previewForm').submit();
+        const f = document.getElementById('previewForm');
+        const oldAction = f.action;
+        const oldTarget = f.getAttribute('target');
+        
+        f.action = "{{ route('invoice.preview') }}";
+        f.target = "_blank";
+        f.submit();
+
+        setTimeout(function () {
+            f.action = oldAction;
+            if (oldTarget) {
+                f.setAttribute('target', oldTarget);
+            } else {
+                f.removeAttribute('target');
+            }
+        }, 300);
     }
 
-    // toggle 'Download PDF' button availability
-    function updateDownloadState() {
+    function updateActionButtonsState() {
         const clientSelected = $('#client').val();
         const hasService = $('#serviceList tr').length > 0;
-        const btn = document.querySelector('button[onclick="downloadInvoice()"]');
-        if (btn) btn.disabled = !(clientSelected && hasService);
+        const disabled = !(clientSelected && hasService);
+        
+        $('#downloadPrintBtn').prop('disabled', disabled).toggleClass('opacity-50 cursor-not-allowed', disabled);
+        $('button[onclick="submitPreview()"]').prop('disabled', disabled).toggleClass('opacity-50 cursor-not-allowed', disabled);
     }
 
     $(document).ready(function() {
-        $('#client').on('change', updateDownloadState);
-        // also watch for rows being added/removed
+        $('#client').on('change', updateActionButtonsState);
         const target = document.getElementById('serviceList');
         if (target) {
-            const observer = new MutationObserver(updateDownloadState);
+            const observer = new MutationObserver(updateActionButtonsState);
             observer.observe(target, { childList: true });
         }
-        updateDownloadState();
+        updateActionButtonsState();
     });
     </script>
 

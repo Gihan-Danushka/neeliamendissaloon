@@ -57,10 +57,11 @@
 
   <!-- Header -->
   <div class="center">
-    @php $logoPath = public_path('images/img/blackLogoGloryLuxe.png'); @endphp
+    {{-- Commented out logo to avoid PHP GD extension requirement error --}}
+    {{-- @php $logoPath = public_path('images/img/blackLogoGloryLuxe.png'); @endphp
     @if(file_exists($logoPath))
       <img src="{{ $logoPath }}" class="logo" alt="Logo">
-    @endif
+    @endif --}}
     <div class="title">Glory Luxe Beauty Studio</div>
     <div class="semi">144 Diulapitiya Road, Marandagahamula</div>
     <div class="semi">070 422 3885</div>
