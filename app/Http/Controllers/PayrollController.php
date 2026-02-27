@@ -136,8 +136,8 @@ class PayrollController extends Controller
                 'commission_rate' => $calc['commission_rate'],
                 'commission_amount' => $calc['commission_amount'],
 
-                'allowances_total' => $calc['leave_bonus'] ?? 0,
-                'deductions_total' => $calc['leave_deduction'],
+                'allowances_total' => $calc['allowances_total'] ?? 0,
+                'deductions_total' => $calc['leave_deduction'] + ($calc['fpf_deduction'] ?? 0),
                 'gross_pay' => $calc['gross_pay'] + $weddingPayment,
                 'net_pay' => $calc['net_pay'] + $weddingPayment,
 
@@ -161,6 +161,47 @@ class PayrollController extends Controller
                 'type' => 'allowance',
                 'label' => 'Wedding payment',
                 'amount' => $weddingPayment,
+            ]);
+        }
+
+        // Upsert Attendance allowances (computed attendance and staff-set attendance allowance)
+        PayrollAdjustment::query()
+            ->where('payroll_id', $payroll->id)
+            ->where('type', 'allowance')
+            ->whereIn('label', ['Attendance', 'Attendance Allowance'])
+            ->delete();
+
+        if (!empty($calc['attendance']) && (float)$calc['attendance'] > 0) {
+            PayrollAdjustment::create([
+                'payroll_id' => $payroll->id,
+                'type' => 'allowance',
+                'label' => 'Attendance',
+                'amount' => (float)$calc['attendance'],
+            ]);
+        }
+
+        if (!empty($calc['attendance_allowance']) && (float)$calc['attendance_allowance'] > 0) {
+            PayrollAdjustment::create([
+                'payroll_id' => $payroll->id,
+                'type' => 'allowance',
+                'label' => 'Attendance Allowance',
+                'amount' => (float)$calc['attendance_allowance'],
+            ]);
+        }
+
+        // Upsert FPF deduction
+        PayrollAdjustment::query()
+            ->where('payroll_id', $payroll->id)
+            ->where('type', 'deduction')
+            ->where('label', 'FPF')
+            ->delete();
+
+        if (!empty($calc['fpf_deduction']) && (float)$calc['fpf_deduction'] > 0) {
+            PayrollAdjustment::create([
+                'payroll_id' => $payroll->id,
+                'type' => 'deduction',
+                'label' => 'FPF',
+                'amount' => (float)$calc['fpf_deduction'],
             ]);
         }
 
@@ -232,8 +273,8 @@ class PayrollController extends Controller
                     'commission_rate' => $calc['commission_rate'],
                     'commission_amount' => $calc['commission_amount'],
 
-                    'allowances_total' => $calc['leave_bonus'] ?? 0,
-                    'deductions_total' => $calc['leave_deduction'],
+                    'allowances_total' => $calc['allowances_total'] ?? 0,
+                    'deductions_total' => $calc['leave_deduction'] + ($calc['fpf_deduction'] ?? 0),
                     'gross_pay' => $calc['gross_pay'] + $weddingPayment,
                     'net_pay' => $calc['net_pay'] + $weddingPayment,
 
@@ -243,12 +284,41 @@ class PayrollController extends Controller
                     'created_by' => Auth::id(),
                 ]);
 
+
                 if ($weddingPayment > 0) {
                     PayrollAdjustment::create([
                         'payroll_id' => $payroll->id,
                         'type' => 'allowance',
                         'label' => 'Wedding payment',
                         'amount' => $weddingPayment,
+                    ]);
+                }
+
+                // Add Attendance allowances
+                if (!empty($calc['attendance']) && (float)$calc['attendance'] > 0) {
+                    PayrollAdjustment::create([
+                        'payroll_id' => $payroll->id,
+                        'type' => 'allowance',
+                        'label' => 'Attendance',
+                        'amount' => (float)$calc['attendance'],
+                    ]);
+                }
+
+                if (!empty($calc['attendance_allowance']) && (float)$calc['attendance_allowance'] > 0) {
+                    PayrollAdjustment::create([
+                        'payroll_id' => $payroll->id,
+                        'type' => 'allowance',
+                        'label' => 'Attendance Allowance',
+                        'amount' => (float)$calc['attendance_allowance'],
+                    ]);
+                }
+
+                if (!empty($calc['fpf_deduction']) && (float)$calc['fpf_deduction'] > 0) {
+                    PayrollAdjustment::create([
+                        'payroll_id' => $payroll->id,
+                        'type' => 'deduction',
+                        'label' => 'FPF',
+                        'amount' => (float)$calc['fpf_deduction'],
                     ]);
                 }
 

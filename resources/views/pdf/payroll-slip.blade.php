@@ -156,13 +156,14 @@
     $dailyRate = ((float) $payroll->basic_salary) / 30;
     $unusedLeaves = max(0, (float) $payroll->allowed_leaves - (float) $payroll->leaves_taken);
 
-    $leaveBonus = (float) ($payroll->allowances_total ?? 0);
+    $attendance = (float) ($payroll->adjustments?->where('type', 'allowance')->where('label', 'Attendance')->sum('amount') ?? 0);
+    $attendanceAllowance = (float) ($payroll->adjustments?->where('type', 'allowance')->where('label', 'Attendance Allowance')->sum('amount') ?? 0);
 
     $weddingPayment = (float) ($payroll->adjustments?->where('type', 'allowance')->where('label', 'Wedding payment')->sum('amount') ?? 0);
-    $extraAllowances = (float) ($payroll->adjustments?->where('type', 'allowance')->where('label', '!=', 'Wedding payment')->sum('amount') ?? 0);
+    $extraAllowances = (float) ($payroll->adjustments?->where('type', 'allowance')->whereNotIn('label', ['Wedding payment', 'Attendance', 'Attendance Allowance'])->sum('amount') ?? 0);
     $extraDeductions = (float) ($payroll->adjustments?->where('type', 'deduction')->sum('amount') ?? 0);
 
-    $salarySubTotal = (float) $payroll->basic_salary + $leaveBonus;
+    $salarySubTotal = (float) $payroll->basic_salary + $attendance + $attendanceAllowance;
     $totalSalary = $salarySubTotal + (float) $payroll->commission_amount + $weddingPayment + $extraAllowances;
     $totalDeductions = (float) $payroll->leave_deduction + $extraDeductions;
 
@@ -217,8 +218,12 @@
                     <td class="amount-col">{{ number_format((float)$payroll->basic_salary, 2) }}</td>
                 </tr>
                 <tr>
+                    <td>Attendance</td>
+                    <td class="amount-col">{{ number_format($attendance, 2) }}</td>
+                </tr>
+                <tr>
                     <td>Attendance Allowance</td>
-                    <td class="amount-col">{{ number_format($leaveBonus, 2) }}</td>
+                    <td class="amount-col">{{ number_format($attendanceAllowance, 2) }}</td>
                 </tr>
                 <tr>
                     <td>Commission (Extra pay & OT)</td>
@@ -230,8 +235,8 @@
                     <td class="amount-col">{{ number_format($weddingPayment, 2) }}</td>
                 </tr>
                 @endif
-                @if($payroll->adjustments && $payroll->adjustments->where('type', 'allowance')->where('label', '!=', 'Wedding payment')->count())
-                    @foreach($payroll->adjustments->where('type', 'allowance')->where('label', '!=', 'Wedding payment') as $a)
+                @if($payroll->adjustments && $payroll->adjustments->where('type', 'allowance')->whereNotIn('label', ['Wedding payment', 'Attendance', 'Attendance Allowance'])->count())
+                    @foreach($payroll->adjustments->where('type', 'allowance')->whereNotIn('label', ['Wedding payment', 'Attendance', 'Attendance Allowance']) as $a)
                         <tr>
                             <td>{{ $a->label }}</td>
                             <td class="amount-col">{{ number_format((float)$a->amount, 2) }}</td>

@@ -165,13 +165,14 @@
 
                                 $dailyRate = ((float) $p->basic_salary) / 30;
                                 $unusedLeaves = max(0, (float) $p->allowed_leaves - (float) $p->leaves_taken);
-                                $leaveBonus = (float) ($p->allowances_total ?? 0);
+                                $attendance = (float) ($p->adjustments?->where('type', 'allowance')->where('label', 'Attendance')->sum('amount') ?? 0);
+                                $attendanceAllowance = (float) ($p->adjustments?->where('type', 'allowance')->where('label', 'Attendance Allowance')->sum('amount') ?? 0);
 
                                 $weddingPayment = (float) ($p->adjustments?->where('type', 'allowance')->where('label', 'Wedding payment')->sum('amount') ?? 0);
-                                $extraAllowances = (float) ($p->adjustments?->where('type', 'allowance')->where('label', '!=', 'Wedding payment')->sum('amount') ?? 0);
+                                $extraAllowances = (float) ($p->adjustments?->where('type', 'allowance')->whereNotIn('label', ['Wedding payment', 'Attendance', 'Attendance Allowance'])->sum('amount') ?? 0);
                                 $extraDeductions = (float) ($p->adjustments?->where('type', 'deduction')->sum('amount') ?? 0);
 
-                                $salarySubTotal = (float) $p->basic_salary + $leaveBonus;
+                                $salarySubTotal = (float) $p->basic_salary + $attendance + $attendanceAllowance;
                                 $totalSalary = $salarySubTotal + (float) $p->commission_amount + $weddingPayment + $extraAllowances;
                                 $totalDeductions = (float) $p->leave_deduction + $extraDeductions;
                                 $balanceSalary = $totalSalary - $totalDeductions;
@@ -210,18 +211,20 @@
                                             <div class="font-semibold">Salary Basic</div>
                                             <div>Rs. {{ number_format((float)$p->basic_salary, 2) }}</div>
                                         </div>
+                                        
                                         <div class="flex items-center justify-between mt-2">
                                             <div class="font-semibold">Attendance allowance</div>
-                                            <div>Rs. {{ number_format($leaveBonus, 2) }}</div>
+                                            <div>Rs. {{ number_format($attendanceAllowance, 2) }}</div>
                                         </div>
-                                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 font-semibold">
-                                            <div>Subtotal</div>
-                                            <div>Rs. {{ number_format($salarySubTotal, 2) }}</div>
-                                        </div>
+                                       
                                     </div>
 
                                     <div class="mt-5">
                                         <div class="font-semibold underline underline-offset-2">Add:</div>
+                                        <div class="flex items-center justify-between mt-2">
+                                            <div>Attendance</div>
+                                            <div>Rs. {{ number_format($attendance, 2) }}</div>
+                                        </div>
                                         <div class="flex items-center justify-between mt-2">
                                             <div>Extra pay &amp; O T (Commission)</div>
                                             <div>Rs. {{ number_format((float)$p->commission_amount, 2) }}</div>
@@ -230,8 +233,8 @@
                                             <div>Wedding payment</div>
                                             <div>Rs. {{ number_format($weddingPayment, 2) }}</div>
                                         </div>
-                                        @if($p->adjustments && $p->adjustments->where('type', 'allowance')->count())
-                                            @foreach($p->adjustments->where('type', 'allowance')->where('label', '!=', 'Wedding payment') as $a)
+                                        @if($p->adjustments && $p->adjustments->where('type', 'allowance')->whereNotIn('label', ['Wedding payment','Attendance','Attendance Allowance'])->count())
+                                            @foreach($p->adjustments->where('type', 'allowance')->whereNotIn('label', ['Wedding payment','Attendance','Attendance Allowance']) as $a)
                                                 <div class="flex items-center justify-between mt-2">
                                                     <div>{{ $a->label }}</div>
                                                     <div>Rs. {{ number_format((float)$a->amount, 2) }}</div>

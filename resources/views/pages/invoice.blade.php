@@ -269,7 +269,7 @@
                 credentials: 'same-origin',
                 headers: {
                     'X-CSRF-TOKEN': token,
-                    'Accept': 'application/json',
+                    'Accept': 'application/pdf',
                 },
                 body: data,
             });

@@ -105,6 +105,7 @@ class InvoiceController extends Controller
                 'date'        => $request->date,
                 'total_price' => $request->total,
                 'client_id'   => $request->selectedClientId,
+                'staff_id'    => $request->staff_id ?? null,
             ]);
 
             // Prepare details

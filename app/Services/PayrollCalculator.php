@@ -32,7 +32,8 @@ class PayrollCalculator
         $unusedLeaves = max(0.0, $allowedLeaves - $leavesTaken);
         $excessLeaves = max(0.0, $leavesTaken - $allowedLeaves);
         $leaveDeduction = $dailyRate * $excessLeaves;
-        $leaveBonus = $dailyRate * $unusedLeaves;
+        $attendance = $dailyRate * $unusedLeaves; // computed attendance (unused leave bonus)
+        $attendanceAllowance = (float) ($staff->attendance_allowance ?? 0.0); // fixed attendance allowance from staff
 
         $invoiceTotal = 0.0;
         if (Schema::hasTable('invoices') && Schema::hasColumn('invoices', 'staff_id')) {
@@ -44,8 +45,11 @@ class PayrollCalculator
 
         $commissionAmount = $invoiceTotal * $commissionRate;
 
-        $grossPay = $baseSalary + $commissionAmount + $leaveBonus;
-        $netPay = $grossPay - $leaveDeduction;
+        $allowancesTotal = $attendance + $attendanceAllowance;
+
+        $fpfDeduction = $baseSalary * 0.08;
+        $grossPay = $baseSalary + $commissionAmount + $allowancesTotal;
+        $netPay = $grossPay - $leaveDeduction - $fpfDeduction;
 
         return [
             'staff_id' => $staff->id,
@@ -60,13 +64,16 @@ class PayrollCalculator
             'unused_leaves' => round($unusedLeaves, 2),
             'excess_leaves' => round($excessLeaves, 2),
             'leave_deduction' => round($leaveDeduction, 2),
-            'leave_bonus' => round($leaveBonus, 2),
+            'attendance' => round($attendance, 2),
+            'attendance_allowance' => round($attendanceAllowance, 2),
+            'allowances_total' => round($allowancesTotal, 2),
 
             'invoice_total' => round($invoiceTotal, 2),
             'commission_rate' => round($commissionRate, 4),
             'commission_amount' => round($commissionAmount, 2),
 
             'gross_pay' => round($grossPay, 2),
+            'fpf_deduction' => round($fpfDeduction, 2),
             'net_pay' => round($netPay, 2),
         ];
     }
