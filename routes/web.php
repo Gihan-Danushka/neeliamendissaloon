@@ -11,6 +11,8 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\ReportController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -132,6 +134,9 @@ Route::post('/notifications/booking/{id}/remind', [DashboardController::class, '
 
     Route::get('/bookings', [BookingController::class, 'index']);
 
-
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports');
+    Route::get('/reports/download', [ReportController::class, 'download'])->name('reports.download');
 
 });
+
+

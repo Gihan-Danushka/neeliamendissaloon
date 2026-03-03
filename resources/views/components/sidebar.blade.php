@@ -78,6 +78,14 @@
             <div>History</div>
         </a>
 
+          <!-- Reports -->
+        <a href="{{ route('reports') }}"
+            class="hover:ml-4 w-full text-white hover:text-white hover:bg-customPalette-light/20 bg-customPalette-darker p-2 pl-8 rounded-full transform ease-in-out duration-300 flex flex-row items-center space-x-3">
+            <img src="{{ asset('icons/report.png') }}" alt="Reports" class="w-10 h-10">
+            <div>Reports</div>
+        </a>
+
+
         <!-- Log Out -->
         <a href="{{ route('logout') }}">
             <div
@@ -140,6 +148,13 @@
             class="hover:ml-4 justify-end text-white hover:text-white hover:bg-customPalette-light/20 w-full bg-customPalette-darker p-3 rounded-full transform ease-in-out duration-300 flex items-center">
             <img src="{{ asset('icons/history.png') }}" alt="History" class="w-8 h-8">
         </a>
+
+        <!-- Reports (Reports Icon) -->
+        <a href="{{ route('reports') }}" title="Reports"
+            class="hover:ml-4 justify-end text-white hover:text-white hover:bg-customPalette-light/20 w-full bg-customPalette-darker p-3 rounded-full transform ease-in-out duration-300 flex items-center">
+            <img src="{{ asset('icons/report.png') }}" alt="Reports" class="w-8 h-8">
+        </a>
+
 
         <!-- Log Out (Logout Icon) -->
         <a href="{{ route('logout') }}" title="Log Out">
